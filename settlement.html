@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SharePay – จัดการหนี้</title>
+  <link rel="stylesheet" href="../responsive.css" />
+  <link rel="stylesheet" href="../main.css" />
+  <style>
+    :root{--primary:#6c63ff;--primary-dark:#574fd6;--primary-light:#ede9ff;--accent:#ff6584;--success:#43d9ad;--warning:#f9a826;--danger:#ef4565;--bg:#f4f6fb;--surface:#ffffff;--surface2:#f0f2f8;--text:#1e1e2e;--text-muted:#7b7f9e;--border:#e2e5f0;--sidebar-w:240px;--radius:14px;--shadow:0 2px 16px rgba(108,99,255,.08);--shadow-md:0 4px 24px rgba(108,99,255,.13);--transition:.2s ease}
+    [data-theme="dark"]{--bg:#13131f;--surface:#1e1e2e;--surface2:#262636;--text:#e8e8f0;--text-muted:#7b7f9e;--border:#2e2e42;--primary-light:#2a2550;--shadow:0 2px 16px rgba(0,0,0,.3);--shadow-md:0 4px 24px rgba(0,0,0,.4)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sarabun','Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;transition:background var(--transition),color var(--transition)}
+    .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform var(--transition);box-shadow:var(--shadow)}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+    .sidebar-logo img{width:36px;height:36px}
+    .sidebar-logo span{font-size:1.25rem;font-weight:700;color:var(--primary);letter-spacing:-.5px}
+    .sidebar-nav{flex:1;padding:14px 0;overflow-y:auto}
+    .nav-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:10px 20px 4px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;color:var(--text-muted);text-decoration:none;font-size:.92rem;font-weight:500;border-radius:var(--radius);margin:2px 10px;transition:background var(--transition),color var(--transition)}
+    .nav-item:hover{background:var(--primary-light);color:var(--primary)}
+    .nav-item.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(108,99,255,.3)}
+    .nav-item .icon{font-size:1.1rem;width:22px;text-align:center}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .avatar{width:36px;height:36px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem}
+    .user-info .user-name{font-size:.88rem;font-weight:600}
+    .user-info .user-role{font-size:.75rem;color:var(--text-muted)}
+    .main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .menu-btn{display:none;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);padding:6px;border-radius:8px}
+    .page-title{font-size:1.1rem;font-weight:700}
+    .topbar-right{display:flex;align-items:center;gap:10px}
+    .icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--text-muted);transition:all var(--transition);text-decoration:none}
+    .icon-btn:hover{background:var(--primary-light);color:var(--primary)}
+    .main-content{flex:1;padding:28px}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+    .section-title{font-size:1.2rem;font-weight:700}
+    .section-sub{font-size:.85rem;color:var(--text-muted);margin-top:2px}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all var(--transition)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(108,99,255,.35)}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+    .btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+    .btn-success{background:var(--success);color:#fff}
+    .btn-success:hover{background:#36c299}
+    .btn-sm{padding:6px 12px;font-size:.8rem}
+    /* Summary cards */
+    .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px}
+    .summary-card{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid var(--border);text-align:center}
+    .summary-card .s-icon{font-size:2rem;margin-bottom:10px}
+    .summary-card .s-label{font-size:.8rem;color:var(--text-muted);margin-bottom:4px}
+    .summary-card .s-value{font-size:1.6rem;font-weight:800}
+    .s-value.danger{color:var(--danger)}
+    .s-value.success{color:var(--success)}
+    .s-value.primary{color:var(--primary)}
+    /* Filter */
+    .filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+    .filter-select{padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:.88rem;outline:none;cursor:pointer;transition:border var(--transition)}
+    .filter-select:focus{border-color:var(--primary)}
+    .search-wrap{position:relative;flex:1;min-width:180px}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+    .search-input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:.9rem;outline:none;transition:border var(--transition)}
+    .search-input:focus{border-color:var(--primary)}
+    /* Table */
+    .table-wrap{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:24px}
+    .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:var(--surface2)}
+    th{padding:12px 16px;text-align:left;font-size:.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+    td{padding:14px 16px;font-size:.88rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tbody tr{transition:background var(--transition)}
+    tbody tr:hover{background:var(--surface2)}
+    .status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+    .status-badge.paid{background:#d1fae5;color:#059669}
+    .status-badge.unpaid{background:#fde8ec;color:var(--danger)}
+    .arrow{font-size:1.2rem;color:var(--text-muted)}
+    .person-tag{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border-radius:20px;padding:4px 12px;font-size:.85rem;font-weight:600}
+    /* Net Balance Table */
+    .card{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:24px}
+    .card-title{font-size:.95rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .balance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+    .balance-item{background:var(--surface2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+    .balance-name{font-size:.88rem;font-weight:600}
+    .balance-val{font-size:1rem;font-weight:800}
+    .balance-val.pos{color:var(--success)}
+    .balance-val.neg{color:var(--danger)}
+    /* Empty */
+    .empty-state{text-align:center;padding:60px 20px}
+    .empty-state .empty-icon{font-size:3.5rem;margin-bottom:14px}
+    .empty-state h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+    .empty-state p{font-size:.88rem;color:var(--text-muted)}
+    /* Error */
+    .error-state{background:#fde8ec;color:var(--danger);border-radius:var(--radius);padding:16px 20px;font-size:.9rem;display:flex;align-items:center;gap:10px;margin-bottom:20px}
+    /* Confirm modal */
+    .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+    .modal-backdrop.open{display:flex}
+    .confirm-dialog{background:var(--surface);border-radius:var(--radius);padding:28px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow-md);animation:modalIn .25s ease}
+    @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .confirm-dialog h3{font-size:1rem;font-weight:700;margin-bottom:10px}
+    .confirm-dialog p{font-size:.88rem;color:var(--text-muted);margin-bottom:20px}
+    .confirm-dialog .actions{display:flex;gap:10px;justify-content:center}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90}
+    .footer{padding:18px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--text-muted)}
+    #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:9000}
+    .toast{background:var(--surface);border-left:4px solid var(--primary);border-radius:10px;box-shadow:var(--shadow-md);padding:14px 18px;font-size:.88rem;animation:slideIn .3s ease;max-width:320px}
+    .toast.success{border-left-color:var(--success)}
+    .toast.error{border-left-color:var(--danger)}
+    @keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+    @media(max-width:900px){.summary-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:768px){
+      .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+      .sidebar-overlay.open{display:block}.main-wrap{margin-left:0}
+      .menu-btn{display:flex}.main-content{padding:18px}.topbar{padding:0 18px}
+      th:nth-child(4),td:nth-child(4){display:none}
+    }
+    @media(max-width:480px){.summary-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="../logo.svg" alt="SharePay" onerror="this.style.display='none'">
+    <span>SharePay</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">เมนูหลัก</div>
+    <a class="nav-item" href="../index.html"><span class="icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="groups.html"><span class="icon">👥</span> กลุ่ม</a>
+    <a class="nav-item" href="expenses.html"><span class="icon">💸</span> รายจ่าย</a>
+    <a class="nav-item active" href="settlement.html"><span class="icon">⚖️</span> จัดการหนี้</a>
+    <div class="nav-label" style="margin-top:12px;">ระบบ</div>
+    <a class="nav-item" href="settings.html"><span class="icon">⚙️</span> ตั้งค่า</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="avatar">U</div>
+    <div class="user-info"><div class="user-name">ผู้ใช้งาน</div><div class="user-role">Member</div></div>
+  </div>
+</aside>
+
+<div class="main-wrap">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <div class="page-title">⚖️ จัดการหนี้</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary btn-sm" onclick="recalculate()">🔄 คำนวณใหม่</button>
+      <button class="icon-btn" id="themeBtn" title="สลับธีม">🌙</button>
+      <a href="settings.html" class="icon-btn">⚙️</a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="section-header">
+      <div>
+        <div class="section-title">สรุปการชำระเงิน</div>
+        <div class="section-sub">คำนวณว่าใครติดเงินใคร และจัดการการชำระ</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm" onclick="markAllPaid()">✅ ทำเครื่องหมายทั้งหมดว่าชำระแล้ว</button>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+      </div>
+    </div>
+
+    <div id="errorBanner" class="error-state" style="display:none;">⚠️ <span id="errorMsg"></span></div>
+
+    <!-- Summary -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="s-icon">💸</div>
+        <div class="s-label">หนี้ทั้งหมด</div>
+        <div class="s-value danger" id="sumTotal">฿0</div>
+      </div>
+      <div class="summary-card">
+        <div class="s-icon">✅</div>
+        <div class="s-label">ชำระแล้ว</div>
+        <div class="s-value success" id="sumPaid">฿0</div>
+      </div>
+      <div class="summary-card">
+        <div class="s-icon">⏳</div>
+        <div class="s-label">ค้างชำระ</div>
+        <div class="s-value primary" id="sumRemain">฿0</div>
+      </div>
+    </div>
+
+    <!-- Net Balance per Person -->
+    <div class="card">
+      <div class="card-title">💰 ยอดสุทธิแต่ละคน</div>
+      <div class="balance-grid" id="balanceGrid">
+        <div class="empty-state" style="grid-column:1/-1;padding:30px 0">
+          <div class="empty-icon">👤</div>
+          <h3>ยังไม่มีข้อมูล</h3>
+          <p>เพิ่มรายจ่ายและระบุผู้ร่วมหารเพื่อดูผล</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="ค้นหาชื่อ...">
+      </div>
+      <select class="filter-select" id="filterGroup"><option value="">ทุกกลุ่ม</option></select>
+      <select class="filter-select" id="filterStatus">
+        <option value="">ทุกสถานะ</option>
+        <option value="unpaid">ค้างชำระ</option>
+        <option value="paid">ชำระแล้ว</option>
+      </select>
+      <select class="filter-select" id="sortSelect">
+        <option value="amount_desc">มากสุด</option>
+        <option value="amount_asc">น้อยสุด</option>
+        <option value="name">ชื่อ A–Z</option>
+      </select>
+    </div>
+
+    <!-- Debt Table -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <span style="font-size:.88rem;font-weight:600;" id="tableInfo">รายการหนี้ทั้งหมด</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ผู้ค้าง</th>
+              <th></th>
+              <th>ผู้รับ</th>
+              <th>จำนวนเงิน</th>
+              <th>กลุ่ม</th>
+              <th>สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="debtTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>© 2025 SharePay</span><span>v1.0.0</span>
+  </footer>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="confirm-dialog">
+    <h3 id="confirmTitle">✅ ยืนยันการชำระ</h3>
+    <p id="confirmMsg">คุณต้องการทำเครื่องหมายว่าชำระแล้ว?</p>
+    <div class="actions">
+      <button class="btn btn-outline" id="confirmCancel">ยกเลิก</button>
+      <button class="btn btn-success" id="confirmOk">✅ ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../api.js"></script>
+<script>
+  /* Theme & Sidebar */
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  document.getElementById('menuBtn').addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+  overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+  const themeBtn = document.getElementById('themeBtn');
+  function applyTheme(d) { document.documentElement.setAttribute('data-theme', d?'dark':'light'); themeBtn.textContent = d?'☀️':'🌙'; localStorage.setItem('sp_theme', d?'dark':'light'); }
+  themeBtn.addEventListener('click', () => applyTheme(document.documentElement.getAttribute('data-theme') !== 'dark'));
+  applyTheme(localStorage.getItem('sp_theme') === 'dark');
+
+  function showToast(msg, type='') { const t=document.createElement('div'); t.className=`toast ${type}`; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3500); }
+  function fmt(n) { return Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2}); }
+  function esc(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  let expenses=[], groups=[], debts=[], confirmCallback=null;
+
+  function loadAll() {
+    expenses = JSON.parse(localStorage.getItem('sp_expenses')||'[]');
+    groups = JSON.parse(localStorage.getItem('sp_groups')||'[]');
+  }
+
+  function saveExpenses() { localStorage.setItem('sp_expenses', JSON.stringify(expenses)); }
+
+  /* Calculate debts using simplified settlement algorithm */
+  function calculateDebts() {
+    loadAll();
+    const balances = {}; // person -> net balance (positive = owed money, negative = owes money)
+
+    expenses.forEach(e => {
+      const amount = parseFloat(e.amount) || 0;
+      const payer = e.payer;
+      const splitWith = e.splitWith && e.splitWith.length > 0 ? e.splitWith : [payer];
+      const share = amount / splitWith.length;
+
+      // Payer gets credit
+      balances[payer] = (balances[payer] || 0) + amount;
+
+      // Each splitter owes their share
+      splitWith.forEach(person => {
+        balances[person] = (balances[person] || 0) - share;
+      });
+    });
+
+    // Simplify debts
+    const creditors = Object.entries(balances).filter(([,v]) => v > 0.01).sort((a,b) => b[1]-a[1]);
+    const debtors = Object.entries(balances).filter(([,v]) => v < -0.01).sort((a,b) => a[1]-b[1]);
+
+    const result = [];
+    const ci = [...creditors.map(([n,v]) => ({name:n, bal:v}))];
+    const di = [...debtors.map(([n,v]) => ({name:n, bal:-v}))];
+
+    let i=0, j=0;
+    while (i < ci.length && j < di.length) {
+      const amt = Math.min(ci[i].bal, di[j].bal);
+      if (amt > 0.01) {
+        result.push({
+          id: `d_${di[j].name}_${ci[i].name}_${Date.now()}_${Math.random()}`,
+          from: di[j].name,
+          to: ci[i].name,
+          amount: amt,
+          status: 'unpaid',
+          groupId: '',
+          createdAt: Date.now()
+        });
+      }
+      ci[i].bal -= amt;
+      di[j].bal -= amt;
+      if (ci[i].bal < 0.01) i++;
+      if (di[j].bal < 0.01) j++;
+    }
+
+    // Merge with existing paid statuses
+    const existing = JSON.parse(localStorage.getItem('sp_debts')||'[]');
+    result.forEach(d => {
+      const ex = existing.find(e => e.from===d.from && e.to===d.to);
+      if (ex) { d.status = ex.status; d.id = ex.id; }
+    });
+
+    debts = result;
+    localStorage.setItem('sp_debts', JSON.stringify(debts));
+    return balances;
+  }
+
+  function recalculate() {
+    const balances = calculateDebts();
+    renderAll(balances);
+    showToast('🔄 คำนวณใหม่เรียบร้อย', 'success');
+  }
+
+  function renderAll(balances) {
+    // Summary
+    const total = debts.reduce((s,d) => s+(d.amount||0), 0);
+    const paid = debts.filter(d=>d.status==='paid').reduce((s,d) => s+(d.amount||0), 0);
+    document.getElementById('sumTotal').textContent = '฿'+fmt(total);
+    document.getElementById('sumPaid').textContent = '฿'+fmt(paid);
+    document.getElementById('sumRemain').textContent = '฿'+fmt(total-paid);
+
+    // Balance grid
+    const bg = document.getElementById('balanceGrid');
+    if (!balances || Object.keys(balances).length === 0) {
+      bg.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:30px 0">
+        <div class="empty-icon">👤</div><h3>ยังไม่มีข้อมูล</h3>
+        <p>เพิ่มรายจ่ายและระบุผู้ร่วมหารเพื่อดูผล</p>
+      </div>`;
+    } else {
+      bg.innerHTML = Object.entries(balances).map(([name, bal]) => `
+        <div class="balance-item">
+          <div class="balance-name">👤 ${esc(name)}</div>
+          <div class="balance-val ${bal>=0?'pos':'neg'}">${bal>=0?'+':'-'}฿${fmt(Math.abs(bal))}</div>
+        </div>`).join('');
+    }
+
+    // Filter & render debt table
+    renderDebtTable();
+
+    // Populate group filter
+    const filterOpts = '<option value="">ทุกกลุ่ม</option>' + groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+    document.getElementById('filterGroup').innerHTML = filterOpts;
+  }
+
+  function renderDebtTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const fg = document.getElementById('filterGroup').value;
+    const fs = document.getElementById('filterStatus').value;
+    const sort = document.getElementById('sortSelect').value;
+
+    let list = debts.filter(d => {
+      if (q && !(d.from.toLowerCase().includes(q) || d.to.toLowerCase().includes(q))) return false;
+      if (fg && d.groupId !== fg) return false;
+      if (fs && d.status !== fs) return false;
+      return true;
+    });
+    if (sort==='amount_asc') list.sort((a,b) => a.amount-b.amount);
+    else if (sort==='name') list.sort((a,b) => a.from.localeCompare(b.from));
+    else list.sort((a,b) => b.amount-a.amount);
+
+    document.getElementById('tableInfo').textContent = `${list.length} รายการ`;
+    const tbody = document.getElementById('debtTableBody');
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+        <div class="empty-icon">🎉</div>
+        <h3>${debts.length===0?'ยังไม่มีหนี้สิน':'ไม่มีรายการที่ตรงกัน'}</h3>
+        <p>${debts.length===0?'เพิ่มรายจ่ายและระบุผู้ร่วมหารเพื่อเริ่มต้น':'ลองค้นหาด้วยเงื่อนไขอื่น'}</p>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map((d, i) => {
+      const g = groups.find(x => x.id === d.groupId);
+      return `<tr>
+        <td style="color:var(--text-muted)">${i+1}</td>
+        <td><div class="person-tag">👤 ${esc(d.from)}</div></td>
+        <td><span class="arrow">➜</span></td>
+        <td><div class="person-tag">👤 ${esc(d.to)}</div></td>
+        <td style="font-weight:800;color:var(--danger);font-size:1rem">฿${fmt(d.amount)}</td>
+        <td>${g ? `<span style="font-size:.8rem">${g.emoji||'👥'} ${esc(g.name)}</span>` : '<span style="color:var(--text-muted)">–</span>'}</td>
+        <td><span class="status-badge ${d.status||'unpaid'}">${d.status==='paid'?'✅ ชำระแล้ว':'❌ ค้างชำระ'}</span></td>
+        <td>
+          ${d.status !== 'paid'
+            ? `<button class="btn btn-success btn-sm" onclick="payDebt('${d.id}')">✅ ชำระแล้ว</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="unPayDebt('${d.id}')">↩️ ยกเลิก</button>`
+          }
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function payDebt(id) {
+    const d = debts.find(x => x.id === id); if (!d) return;
+    document.getElementById('confirmTitle').textContent = '✅ ยืนยันการชำระ';
+    document.getElementById('confirmMsg').textContent = `${d.from} จ่ายให้ ${d.to} จำนวน ฿${fmt(d.amount)} ใช่หรือไม่?`;
+    confirmCallback = () => {
+      const idx = debts.findIndex(x => x.id === id);
+      if (idx !== -1) debts[idx].status = 'paid';
+      localStorage.setItem('sp_debts', JSON.stringify(debts));
+      showToast('✅ อัปเดตสถานะชำระแล้ว', 'success');
+      renderDebtTable();
+      const paid2 = debts.filter(d=>d.status==='paid').reduce((s,d) => s+(d.amount||0), 0);
+      const total = debts.reduce((s,d) => s+(d.amount||0), 0);
+      document.getElementById('sumPaid').textContent = '฿'+fmt(paid2);
+      document.getElementById('sumRemain').textContent = '฿'+fmt(total-paid2);
+    };
+    document.getElementById('confirmModal').classList.add('open');
+  }
+
+  function unPayDebt(id) {
+    const idx = debts.findIndex(x => x.id === id);
+    if (idx !== -1) debts[idx].status = 'unpaid';
+    localStorage.setItem('sp_debts', JSON.stringify(debts));
+    showToast('↩️ ยกเลิกสถานะชำระแล้ว', '');
+    renderDebtTable();
+  }
+
+  function markAllPaid() {
+    document.getElementById('confirmTitle').textContent = '✅ ยืนยันชำระทั้งหมด';
+    document.getElementById('confirmMsg').textContent = 'ต้องการทำเครื่องหมายทุกรายการว่าชำระแล้ว?';
+    confirmCallback = () => {
+      debts.forEach(d => d.status = 'paid');
+      localStorage.setItem('sp_debts', JSON.stringify(debts));
+      showToast('✅ ทำเครื่องหมายทุกรายการแล้ว', 'success');
+      recalculate();
+    };
+    document.getElementById('confirmModal').classList.add('open');
+  }
+
+  document.getElementById('confirmCancel').addEventListener('click', () => document.getElementById('confirmModal').classList.remove('open'));
+  document.getElementById('confirmOk').addEventListener('click', () => {
+    document.getElementById('confirmModal').classList.remove('open');
+    if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+  });
+
+  function exportCSV() {
+    const headers = ['ผู้ค้าง','ผู้รับ','จำนวนเงิน','กลุ่ม','สถานะ'];
+    const rows = debts.map(d => {
+      const g = groups.find(x => x.id === d.groupId);
+      return [d.from, d.to, d.amount, g?g.name:'', d.status==='paid'?'ชำระแล้ว':'ค้างชำระ'];
+    });
+    const csv = [headers,...rows].map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `settlement_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+    showToast('📥 ดาวน์โหลด CSV สำเร็จ', 'success');
+  }
+
+  ['searchInput','filterGroup','filterStatus','sortSelect'].forEach(id => {
+    document.getElementById(id).addEventListener(id==='searchInput'?'input':'change', renderDebtTable);
+  });
+
+  /* Init */
+  const storedDebts = JSON.parse(localStorage.getItem('sp_debts')||'[]');
+  if (storedDebts.length > 0) {
+    debts = storedDebts;
+    loadAll();
+    const balances = calculateDebts();
+    renderAll(balances);
+  } else {
+    const balances = calculateDebts();
+    renderAll(balances);
+  }
+</script>
+</body>
+</html>

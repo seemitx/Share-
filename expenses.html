@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SharePay – รายจ่าย</title>
+  <link rel="stylesheet" href="../responsive.css" />
+  <link rel="stylesheet" href="../main.css" />
+  <style>
+    :root{--primary:#6c63ff;--primary-dark:#574fd6;--primary-light:#ede9ff;--accent:#ff6584;--success:#43d9ad;--warning:#f9a826;--danger:#ef4565;--bg:#f4f6fb;--surface:#ffffff;--surface2:#f0f2f8;--text:#1e1e2e;--text-muted:#7b7f9e;--border:#e2e5f0;--sidebar-w:240px;--radius:14px;--shadow:0 2px 16px rgba(108,99,255,.08);--shadow-md:0 4px 24px rgba(108,99,255,.13);--transition:.2s ease}
+    [data-theme="dark"]{--bg:#13131f;--surface:#1e1e2e;--surface2:#262636;--text:#e8e8f0;--text-muted:#7b7f9e;--border:#2e2e42;--primary-light:#2a2550;--shadow:0 2px 16px rgba(0,0,0,.3);--shadow-md:0 4px 24px rgba(0,0,0,.4)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sarabun','Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;transition:background var(--transition),color var(--transition)}
+    .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform var(--transition);box-shadow:var(--shadow)}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+    .sidebar-logo img{width:36px;height:36px}
+    .sidebar-logo span{font-size:1.25rem;font-weight:700;color:var(--primary);letter-spacing:-.5px}
+    .sidebar-nav{flex:1;padding:14px 0;overflow-y:auto}
+    .nav-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:10px 20px 4px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;color:var(--text-muted);text-decoration:none;font-size:.92rem;font-weight:500;border-radius:var(--radius);margin:2px 10px;transition:background var(--transition),color var(--transition)}
+    .nav-item:hover{background:var(--primary-light);color:var(--primary)}
+    .nav-item.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(108,99,255,.3)}
+    .nav-item .icon{font-size:1.1rem;width:22px;text-align:center}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .avatar{width:36px;height:36px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem}
+    .user-info .user-name{font-size:.88rem;font-weight:600}
+    .user-info .user-role{font-size:.75rem;color:var(--text-muted)}
+    .main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .menu-btn{display:none;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);padding:6px;border-radius:8px}
+    .page-title{font-size:1.1rem;font-weight:700}
+    .topbar-right{display:flex;align-items:center;gap:10px}
+    .icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--text-muted);transition:all var(--transition);text-decoration:none}
+    .icon-btn:hover{background:var(--primary-light);color:var(--primary)}
+    .main-content{flex:1;padding:28px}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+    .section-title{font-size:1.2rem;font-weight:700}
+    .section-sub{font-size:.85rem;color:var(--text-muted);margin-top:2px}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all var(--transition)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(108,99,255,.35)}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+    .btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-danger:hover{background:#d63353}
+    .btn-sm{padding:6px 12px;font-size:.8rem}
+    /* Filters */
+    .filters{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+    .search-wrap{position:relative;flex:1;min-width:180px}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+    .search-input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:.9rem;outline:none;transition:border var(--transition)}
+    .search-input:focus{border-color:var(--primary)}
+    .filter-select{padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:.88rem;outline:none;cursor:pointer;transition:border var(--transition)}
+    .filter-select:focus{border-color:var(--primary)}
+    /* Stats bar */
+    .stats-bar{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+    .stat-pill{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 18px;display:flex;flex-direction:column;gap:3px;box-shadow:var(--shadow)}
+    .stat-pill-label{font-size:.75rem;color:var(--text-muted);font-weight:500}
+    .stat-pill-value{font-size:1.1rem;font-weight:800;color:var(--primary)}
+    /* Table */
+    .table-wrap{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+    .table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:var(--surface2)}
+    th{padding:12px 16px;text-align:left;font-size:.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+    td{padding:14px 16px;font-size:.88rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tbody tr{transition:background var(--transition)}
+    tbody tr:hover{background:var(--surface2)}
+    .category-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600;background:var(--primary-light);color:var(--primary)}
+    .status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+    .status-badge.paid{background:#d1fae5;color:#059669}
+    .status-badge.unpaid{background:#fde8ec;color:var(--danger)}
+    .status-badge.partial{background:#fff3cd;color:var(--warning)}
+    .actions-cell{display:flex;gap:6px;align-items:center}
+    /* Modal */
+    .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px}
+    .modal-backdrop.open{display:flex}
+    .modal{background:var(--surface);border-radius:var(--radius);padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md);animation:modalIn .25s ease}
+    @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+    .modal-title{font-size:1.1rem;font-weight:700}
+    .modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);border-radius:8px;padding:4px 8px}
+    .modal-close:hover{background:var(--surface2)}
+    .form-group{margin-bottom:16px}
+    .form-label{font-size:.85rem;font-weight:600;margin-bottom:6px;display:block}
+    .form-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:.9rem;outline:none;transition:border var(--transition);font-family:inherit}
+    .form-input:focus{border-color:var(--primary)}
+    .form-input.error{border-color:var(--danger)}
+    .form-error{font-size:.78rem;color:var(--danger);margin-top:4px;display:none}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .split-members{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .split-chip{display:flex;align-items:center;gap:6px;background:var(--surface2);border:2px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.82rem;cursor:pointer;transition:all var(--transition)}
+    .split-chip.selected{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;border-top:1px solid var(--border);padding-top:18px}
+    /* Confirm */
+    .confirm-dialog{background:var(--surface);border-radius:var(--radius);padding:28px;max-width:360px;width:100%;text-align:center;box-shadow:var(--shadow-md)}
+    .confirm-dialog h3{font-size:1rem;font-weight:700;margin-bottom:10px}
+    .confirm-dialog p{font-size:.88rem;color:var(--text-muted);margin-bottom:20px}
+    .confirm-dialog .actions{display:flex;gap:10px;justify-content:center}
+    /* Empty */
+    .empty-state{text-align:center;padding:60px 20px}
+    .empty-state .empty-icon{font-size:3.5rem;margin-bottom:14px}
+    .empty-state h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+    .empty-state p{font-size:.88rem;color:var(--text-muted);margin-bottom:20px}
+    /* Error */
+    .error-state{background:#fde8ec;color:var(--danger);border-radius:var(--radius);padding:16px 20px;font-size:.9rem;display:flex;align-items:center;gap:10px;margin-bottom:20px}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90}
+    .footer{padding:18px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--text-muted)}
+    #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:9000}
+    .toast{background:var(--surface);border-left:4px solid var(--primary);border-radius:10px;box-shadow:var(--shadow-md);padding:14px 18px;font-size:.88rem;animation:slideIn .3s ease;max-width:320px}
+    .toast.success{border-left-color:var(--success)}
+    .toast.error{border-left-color:var(--danger)}
+    @keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+    /* Pagination */
+    .pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border);font-size:.85rem;color:var(--text-muted)}
+    .pagination-btns{display:flex;gap:6px}
+    .page-btn{padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:.82rem;transition:all var(--transition);color:var(--text)}
+    .page-btn:hover,.page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .page-btn:disabled{opacity:.4;cursor:default}
+    @media(max-width:768px){
+      .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+      .sidebar-overlay.open{display:block}.main-wrap{margin-left:0}
+      .menu-btn{display:flex}.main-content{padding:18px}.topbar{padding:0 18px}
+      .form-row{grid-template-columns:1fr}
+      th:nth-child(3),td:nth-child(3),th:nth-child(6),td:nth-child(6){display:none}
+    }
+    @media(max-width:480px){
+      th:nth-child(4),td:nth-child(4){display:none}
+    }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="../logo.svg" alt="SharePay" onerror="this.style.display='none'">
+    <span>SharePay</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">เมนูหลัก</div>
+    <a class="nav-item" href="../index.html"><span class="icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="groups.html"><span class="icon">👥</span> กลุ่ม</a>
+    <a class="nav-item active" href="expenses.html"><span class="icon">💸</span> รายจ่าย</a>
+    <a class="nav-item" href="settlement.html"><span class="icon">⚖️</span> จัดการหนี้</a>
+    <div class="nav-label" style="margin-top:12px;">ระบบ</div>
+    <a class="nav-item" href="settings.html"><span class="icon">⚙️</span> ตั้งค่า</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="avatar">U</div>
+    <div class="user-info"><div class="user-name">ผู้ใช้งาน</div><div class="user-role">Member</div></div>
+  </div>
+</aside>
+
+<div class="main-wrap">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <div class="page-title">💸 รายการค่าใช้จ่าย</div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="themeBtn" title="สลับธีม">🌙</button>
+      <a href="settings.html" class="icon-btn">⚙️</a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="section-header">
+      <div>
+        <div class="section-title">รายการค่าใช้จ่ายทั้งหมด</div>
+        <div class="section-sub" id="expCount">กำลังโหลด...</div>
+      </div>
+      <button class="btn btn-primary" id="addExpBtn">➕ เพิ่มรายการ</button>
+    </div>
+
+    <div id="errorBanner" class="error-state" style="display:none;">⚠️ <span id="errorMsg"></span></div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-pill"><div class="stat-pill-label">รวมทั้งหมด</div><div class="stat-pill-value" id="spTotal">฿0</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">ค้างชำระ</div><div class="stat-pill-value" id="spUnpaid" style="color:var(--danger)">฿0</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">ชำระแล้ว</div><div class="stat-pill-value" id="spPaid" style="color:var(--success)">฿0</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">รายการ</div><div class="stat-pill-value" id="spCount">0</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="ค้นหารายการ...">
+      </div>
+      <select class="filter-select" id="filterGroup"><option value="">ทุกกลุ่ม</option></select>
+      <select class="filter-select" id="filterCat">
+        <option value="">ทุกหมวดหมู่</option>
+        <option>อาหาร</option><option>เดินทาง</option><option>ที่พัก</option>
+        <option>ความบันเทิง</option><option>ช็อปปิ้ง</option><option>สุขภาพ</option><option>อื่นๆ</option>
+      </select>
+      <select class="filter-select" id="filterStatus">
+        <option value="">ทุกสถานะ</option>
+        <option value="unpaid">ค้างชำระ</option>
+        <option value="paid">ชำระแล้ว</option>
+        <option value="partial">บางส่วน</option>
+      </select>
+      <select class="filter-select" id="sortSelect">
+        <option value="newest">ล่าสุด</option>
+        <option value="oldest">เก่าสุด</option>
+        <option value="highest">มากสุด</option>
+        <option value="lowest">น้อยสุด</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <span style="font-size:.88rem;font-weight:600;" id="tableInfo">รายการทั้งหมด</span>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ชื่อรายการ</th>
+              <th>หมวดหมู่</th>
+              <th>จำนวนเงิน</th>
+              <th>ผู้จ่าย</th>
+              <th>กลุ่ม</th>
+              <th>วันที่</th>
+              <th>สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="expTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="paginationBar"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>© 2025 SharePay</span><span>v1.0.0</span>
+  </footer>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop" id="expModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="expModalTitle">➕ เพิ่มรายการ</div>
+      <button class="modal-close" id="expModalClose">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">ชื่อรายการ <span style="color:var(--danger)">*</span></label>
+        <input type="text" class="form-input" id="fExpName" placeholder="เช่น ค่าอาหารเที่ยง">
+        <div class="form-error" id="fExpNameErr">กรุณากรอกชื่อรายการ</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">หมวดหมู่</label>
+        <select class="form-input" id="fExpCat">
+          <option>อาหาร</option><option>เดินทาง</option><option>ที่พัก</option>
+          <option>ความบันเทิง</option><option>ช็อปปิ้ง</option><option>สุขภาพ</option><option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">จำนวนเงิน (฿) <span style="color:var(--danger)">*</span></label>
+        <input type="number" class="form-input" id="fExpAmount" placeholder="0.00" min="0" step="0.01">
+        <div class="form-error" id="fExpAmountErr">กรุณากรอกจำนวนเงิน</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">ผู้จ่าย <span style="color:var(--danger)">*</span></label>
+        <input type="text" class="form-input" id="fExpPayer" placeholder="ชื่อผู้จ่าย">
+        <div class="form-error" id="fExpPayerErr">กรุณากรอกชื่อผู้จ่าย</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">กลุ่ม</label>
+        <select class="form-input" id="fExpGroup">
+          <option value="">ไม่ระบุกลุ่ม</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">วันที่</label>
+        <input type="date" class="form-input" id="fExpDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">สถานะ</label>
+        <select class="form-input" id="fExpStatus">
+          <option value="unpaid">ค้างชำระ</option>
+          <option value="paid">ชำระแล้ว</option>
+          <option value="partial">บางส่วน</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ผู้ร่วมหาร</label>
+      <div class="split-members" id="splitMembers">
+        <span style="font-size:.82rem;color:var(--text-muted)">เลือกกลุ่มก่อนเพื่อเลือกสมาชิก</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">หมายเหตุ</label>
+      <input type="text" class="form-input" id="fExpNote" placeholder="รายละเอียดเพิ่มเติม">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="expModalCancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="expModalSave">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="confirm-dialog">
+    <h3>⚠️ ยืนยันการลบ</h3>
+    <p>คุณต้องการลบรายการ "<span id="confirmExpName"></span>" ใช่หรือไม่?</p>
+    <div class="actions">
+      <button class="btn btn-outline" id="confirmCancel">ยกเลิก</button>
+      <button class="btn btn-danger" id="confirmDelete">🗑️ ลบ</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../api.js"></script>
+<script src="../expenses.js"></script>
+<script>
+  /* Theme & Sidebar */
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  document.getElementById('menuBtn').addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+  overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+  const themeBtn = document.getElementById('themeBtn');
+  function applyTheme(d) { document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light'); themeBtn.textContent = d ? '☀️' : '🌙'; localStorage.setItem('sp_theme', d ? 'dark' : 'light'); }
+  themeBtn.addEventListener('click', () => applyTheme(document.documentElement.getAttribute('data-theme') !== 'dark'));
+  applyTheme(localStorage.getItem('sp_theme') === 'dark');
+
+  function showToast(msg, type = '') { const t = document.createElement('div'); t.className = `toast ${type}`; t.textContent = msg; document.getElementById('toast-container').appendChild(t); setTimeout(() => t.remove(), 3500); }
+  function fmt(n) { return Number(n||0).toLocaleString('th-TH', {minimumFractionDigits:2}); }
+  function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  let expenses = [], groups = [], editId = null, deleteId = null, currentPage = 1, perPage = 15;
+
+  function loadAll() {
+    expenses = JSON.parse(localStorage.getItem('sp_expenses') || '[]');
+    groups = JSON.parse(localStorage.getItem('sp_groups') || '[]');
+  }
+
+  function saveExpenses() { localStorage.setItem('sp_expenses', JSON.stringify(expenses)); }
+
+  /* Populate group selects */
+  function populateGroupSelects() {
+    const opts = '<option value="">ไม่ระบุกลุ่ม</option>' + groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+    document.getElementById('fExpGroup').innerHTML = opts;
+    const filterOpts = '<option value="">ทุกกลุ่ม</option>' + groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+    document.getElementById('filterGroup').innerHTML = filterOpts;
+  }
+
+  /* Check URL params */
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlGroup = urlParams.get('group');
+
+  function getFiltered() {
+    loadAll();
+    populateGroupSelects();
+    if (urlGroup) document.getElementById('filterGroup').value = urlGroup;
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const fg = document.getElementById('filterGroup').value;
+    const fc = document.getElementById('filterCat').value;
+    const fs = document.getElementById('filterStatus').value;
+    const sort = document.getElementById('sortSelect').value;
+    let list = expenses.filter(e => {
+      if (q && !((e.name||'').toLowerCase().includes(q) || (e.payer||'').toLowerCase().includes(q))) return false;
+      if (fg && e.groupId !== fg) return false;
+      if (fc && e.category !== fc) return false;
+      if (fs && e.status !== fs) return false;
+      return true;
+    });
+    if (sort === 'oldest') list.sort((a,b) => (a.createdAt||0)-(b.createdAt||0));
+    else if (sort === 'highest') list.sort((a,b) => (b.amount||0)-(a.amount||0));
+    else if (sort === 'lowest') list.sort((a,b) => (a.amount||0)-(b.amount||0));
+    else list.sort((a,b) => (b.createdAt||0)-(a.createdAt||0));
+    return list;
+  }
+
+  function renderTable() {
+    const list = getFiltered();
+    const totalAll = list.reduce((s,e) => s+(parseFloat(e.amount)||0), 0);
+    const paid = list.filter(e=>e.status==='paid').reduce((s,e) => s+(parseFloat(e.amount)||0), 0);
+    const unpaid = list.filter(e=>e.status!=='paid').reduce((s,e) => s+(parseFloat(e.amount)||0), 0);
+    document.getElementById('spTotal').textContent = '฿'+fmt(totalAll);
+    document.getElementById('spPaid').textContent = '฿'+fmt(paid);
+    document.getElementById('spUnpaid').textContent = '฿'+fmt(unpaid);
+    document.getElementById('spCount').textContent = list.length;
+    document.getElementById('expCount').textContent = `${list.length} รายการ`;
+    document.getElementById('tableInfo').textContent = `แสดง ${list.length} รายการ`;
+
+    const totalPages = Math.max(1, Math.ceil(list.length / perPage));
+    currentPage = Math.min(currentPage, totalPages);
+    const start = (currentPage - 1) * perPage;
+    const page = list.slice(start, start + perPage);
+
+    const tbody = document.getElementById('expTableBody');
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>ไม่มีรายการค่าใช้จ่าย</h3>
+        <p>เพิ่มรายการแรกของคุณ</p>
+        <button class="btn btn-primary" onclick="openAddModal()">➕ เพิ่มรายการ</button>
+      </div></td></tr>`;
+      document.getElementById('paginationBar').innerHTML = '';
+      return;
+    }
+
+    const catIcons = {อาหาร:'🍽️',เดินทาง:'🚗',ที่พัก:'🏨',ความบันเทิง:'🎉',ช็อปปิ้ง:'🛒',สุขภาพ:'💊',อื่นๆ:'📦'};
+    tbody.innerHTML = page.map((e, i) => {
+      const g = groups.find(x => x.id === e.groupId);
+      const statusMap = {paid:'paid ✅ ชำระแล้ว',unpaid:'unpaid ❌ ค้างชำระ',partial:'partial ⚠️ บางส่วน'};
+      const [sc, sl] = (statusMap[e.status]||'unpaid ❌ ค้างชำระ').split(' ', 2);
+      const statusLabel = statusMap[e.status] ? statusMap[e.status].split(' ').slice(1).join(' ') : '❌ ค้างชำระ';
+      return `<tr>
+        <td style="color:var(--text-muted)">${start+i+1}</td>
+        <td><strong>${esc(e.name||'–')}</strong>${e.note ? `<br><span style="font-size:.75rem;color:var(--text-muted)">${esc(e.note)}</span>` : ''}</td>
+        <td><span class="category-badge">${catIcons[e.category]||'📦'} ${esc(e.category||'อื่นๆ')}</span></td>
+        <td style="font-weight:700;color:var(--primary)">฿${fmt(e.amount)}</td>
+        <td>${esc(e.payer||'–')}</td>
+        <td>${g ? `<span style="font-size:.8rem">${g.emoji||'👥'} ${esc(g.name)}</span>` : '<span style="color:var(--text-muted)">–</span>'}</td>
+        <td style="color:var(--text-muted);font-size:.82rem">${e.date ? new Date(e.date+'T00:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}) : '–'}</td>
+        <td><span class="status-badge ${e.status||'unpaid'}">${statusLabel}</span></td>
+        <td><div class="actions-cell">
+          <button class="btn btn-outline btn-sm" onclick="openEditModal('${e.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteExp('${e.id}')">🗑️</button>
+          ${e.status !== 'paid' ? `<button class="btn btn-sm" style="background:#d1fae5;color:#059669" onclick="markPaid('${e.id}')">✅</button>` : ''}
+        </div></td>
+      </tr>`;
+    }).join('');
+
+    // Pagination
+    let pHtml = `<span>หน้า ${currentPage} จาก ${totalPages}</span><div class="pagination-btns">`;
+    pHtml += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>`;
+    for (let p = Math.max(1, currentPage-2); p <= Math.min(totalPages, currentPage+2); p++) {
+      pHtml += `<button class="page-btn${p===currentPage?' active':''}" onclick="goPage(${p})">${p}</button>`;
+    }
+    pHtml += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>›</button></div>`;
+    document.getElementById('paginationBar').innerHTML = pHtml;
+  }
+
+  function goPage(p) { currentPage = p; renderTable(); }
+
+  function markPaid(id) {
+    loadAll();
+    const idx = expenses.findIndex(e => e.id === id);
+    if (idx !== -1) { expenses[idx].status = 'paid'; saveExpenses(); renderTable(); showToast('✅ อัปเดตสถานะแล้ว', 'success'); }
+  }
+
+  /* Modal */
+  function openAddModal() {
+    editId = null;
+    document.getElementById('expModalTitle').textContent = '➕ เพิ่มรายการใหม่';
+    document.getElementById('fExpName').value = '';
+    document.getElementById('fExpCat').value = 'อาหาร';
+    document.getElementById('fExpAmount').value = '';
+    document.getElementById('fExpPayer').value = '';
+    document.getElementById('fExpGroup').value = urlGroup || '';
+    document.getElementById('fExpDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fExpStatus').value = 'unpaid';
+    document.getElementById('fExpNote').value = '';
+    clearErrors();
+    updateSplitMembers(urlGroup || '');
+    document.getElementById('expModal').classList.add('open');
+    document.getElementById('fExpName').focus();
+  }
+
+  function openEditModal(id) {
+    loadAll();
+    const e = expenses.find(x => x.id === id); if (!e) return;
+    editId = id;
+    document.getElementById('expModalTitle').textContent = '✏️ แก้ไขรายการ';
+    document.getElementById('fExpName').value = e.name || '';
+    document.getElementById('fExpCat').value = e.category || 'อาหาร';
+    document.getElementById('fExpAmount').value = e.amount || '';
+    document.getElementById('fExpPayer').value = e.payer || '';
+    document.getElementById('fExpGroup').value = e.groupId || '';
+    document.getElementById('fExpDate').value = e.date || new Date().toISOString().split('T')[0];
+    document.getElementById('fExpStatus').value = e.status || 'unpaid';
+    document.getElementById('fExpNote').value = e.note || '';
+    clearErrors();
+    updateSplitMembers(e.groupId || '', e.splitWith || []);
+    document.getElementById('expModal').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('expModal').classList.remove('open'); }
+  function clearErrors() {
+    document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('.form-input').forEach(e => e.classList.remove('error'));
+  }
+
+  function updateSplitMembers(groupId, selected = []) {
+    const g = groups.find(x => x.id === groupId);
+    const sm = document.getElementById('splitMembers');
+    if (!g || !(g.members||[]).length) {
+      sm.innerHTML = '<span style="font-size:.82rem;color:var(--text-muted)">เลือกกลุ่มก่อนเพื่อเลือกสมาชิก</span>';
+      return;
+    }
+    sm.innerHTML = g.members.map(m => `
+      <div class="split-chip${selected.includes(m)?' selected':''}" onclick="toggleSplit(this,'${esc(m)}')">${esc(m)}</div>
+    `).join('');
+  }
+  function toggleSplit(el, name) { el.classList.toggle('selected'); }
+
+  document.getElementById('fExpGroup').addEventListener('change', function() { updateSplitMembers(this.value); });
+  document.getElementById('addExpBtn').addEventListener('click', openAddModal);
+  document.getElementById('expModalClose').addEventListener('click', closeModal);
+  document.getElementById('expModalCancel').addEventListener('click', closeModal);
+  document.getElementById('expModal').addEventListener('click', e => { if (e.target === document.getElementById('expModal')) closeModal(); });
+
+  document.getElementById('expModalSave').addEventListener('click', () => {
+    clearErrors();
+    const name = document.getElementById('fExpName').value.trim();
+    const amount = parseFloat(document.getElementById('fExpAmount').value);
+    const payer = document.getElementById('fExpPayer').value.trim();
+    let valid = true;
+    if (!name) { document.getElementById('fExpName').classList.add('error'); document.getElementById('fExpNameErr').style.display='block'; valid=false; }
+    if (!amount || isNaN(amount) || amount <= 0) { document.getElementById('fExpAmount').classList.add('error'); document.getElementById('fExpAmountErr').style.display='block'; valid=false; }
+    if (!payer) { document.getElementById('fExpPayer').classList.add('error'); document.getElementById('fExpPayerErr').style.display='block'; valid=false; }
+    if (!valid) return;
+    const splitWith = [...document.querySelectorAll('.split-chip.selected')].map(c => c.textContent);
+    const exp = {
+      name, amount, payer,
+      category: document.getElementById('fExpCat').value,
+      groupId: document.getElementById('fExpGroup').value,
+      date: document.getElementById('fExpDate').value,
+      status: document.getElementById('fExpStatus').value,
+      note: document.getElementById('fExpNote').value.trim(),
+      splitWith, updatedAt: Date.now()
+    };
+    loadAll();
+    if (editId) {
+      const idx = expenses.findIndex(x => x.id === editId);
+      if (idx !== -1) expenses[idx] = { ...expenses[idx], ...exp };
+      showToast('✅ แก้ไขรายการสำเร็จ', 'success');
+    } else {
+      exp.id = 'e_' + Date.now();
+      exp.createdAt = Date.now();
+      expenses.push(exp);
+      showToast('✅ เพิ่มรายการสำเร็จ', 'success');
+    }
+    saveExpenses();
+    closeModal();
+    renderTable();
+    if (typeof onExpensesUpdated === 'function') onExpensesUpdated(expenses);
+  });
+
+  /* Delete */
+  function confirmDeleteExp(id) {
+    loadAll(); const e = expenses.find(x => x.id === id); if (!e) return;
+    deleteId = id;
+    document.getElementById('confirmExpName').textContent = e.name;
+    document.getElementById('confirmModal').classList.add('open');
+  }
+  document.getElementById('confirmCancel').addEventListener('click', () => document.getElementById('confirmModal').classList.remove('open'));
+  document.getElementById('confirmDelete').addEventListener('click', () => {
+    loadAll();
+    expenses = expenses.filter(e => e.id !== deleteId);
+    saveExpenses();
+    document.getElementById('confirmModal').classList.remove('open');
+    showToast('🗑️ ลบรายการเรียบร้อย', '');
+    renderTable();
+  });
+
+  /* Export CSV */
+  function exportCSV() {
+    const list = getFiltered();
+    const headers = ['ชื่อรายการ','หมวดหมู่','จำนวนเงิน','ผู้จ่าย','กลุ่ม','วันที่','สถานะ','หมายเหตุ'];
+    const rows = list.map(e => {
+      const g = groups.find(x => x.id === e.groupId);
+      return [e.name,e.category,e.amount,e.payer,g?g.name:'',e.date,e.status,e.note||''];
+    });
+    const csv = [headers,...rows].map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `expenses_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+    showToast('📥 ดาวน์โหลด CSV สำเร็จ', 'success');
+  }
+
+  /* Filters */
+  ['searchInput','filterGroup','filterCat','filterStatus','sortSelect'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => { currentPage=1; renderTable(); });
+  });
+  document.getElementById('searchInput').addEventListener('input', () => { currentPage=1; renderTable(); });
+
+  /* Init */
+  loadAll(); populateGroupSelects(); renderTable();
+  if (typeof initExpenses === 'function') initExpenses();
+</script>
+</body>
+</html>

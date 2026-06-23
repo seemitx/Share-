@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SharePay – กลุ่ม</title>
+  <link rel="stylesheet" href="../responsive.css" />
+  <link rel="stylesheet" href="../main.css" />
+  <style>
+    :root {
+      --primary: #6c63ff; --primary-dark: #574fd6; --primary-light: #ede9ff;
+      --accent: #ff6584; --success: #43d9ad; --warning: #f9a826; --danger: #ef4565;
+      --bg: #f4f6fb; --surface: #ffffff; --surface2: #f0f2f8;
+      --text: #1e1e2e; --text-muted: #7b7f9e; --border: #e2e5f0;
+      --sidebar-w: 240px; --radius: 14px;
+      --shadow: 0 2px 16px rgba(108,99,255,.08);
+      --shadow-md: 0 4px 24px rgba(108,99,255,.13);
+      --transition: .2s ease;
+    }
+    [data-theme="dark"] {
+      --bg:#13131f; --surface:#1e1e2e; --surface2:#262636; --text:#e8e8f0;
+      --text-muted:#7b7f9e; --border:#2e2e42; --primary-light:#2a2550;
+      --shadow:0 2px 16px rgba(0,0,0,.3); --shadow-md:0 4px 24px rgba(0,0,0,.4);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sarabun','Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;transition:background var(--transition),color var(--transition)}
+    .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform var(--transition);box-shadow:var(--shadow)}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+    .sidebar-logo img{width:36px;height:36px}
+    .sidebar-logo span{font-size:1.25rem;font-weight:700;color:var(--primary);letter-spacing:-.5px}
+    .sidebar-nav{flex:1;padding:14px 0;overflow-y:auto}
+    .nav-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:10px 20px 4px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;color:var(--text-muted);text-decoration:none;font-size:.92rem;font-weight:500;border-radius:var(--radius);margin:2px 10px;transition:background var(--transition),color var(--transition)}
+    .nav-item:hover{background:var(--primary-light);color:var(--primary)}
+    .nav-item.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(108,99,255,.3)}
+    .nav-item .icon{font-size:1.1rem;width:22px;text-align:center}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .avatar{width:36px;height:36px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem}
+    .user-info .user-name{font-size:.88rem;font-weight:600}
+    .user-info .user-role{font-size:.75rem;color:var(--text-muted)}
+    .main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .menu-btn{display:none;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);padding:6px;border-radius:8px}
+    .page-title{font-size:1.1rem;font-weight:700}
+    .topbar-right{display:flex;align-items:center;gap:10px}
+    .icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--text-muted);transition:all var(--transition);text-decoration:none}
+    .icon-btn:hover{background:var(--primary-light);color:var(--primary)}
+    .main-content{flex:1;padding:28px}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+    .section-title{font-size:1.2rem;font-weight:700}
+    .section-sub{font-size:.85rem;color:var(--text-muted);margin-top:2px}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all var(--transition)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(108,99,255,.35)}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+    .btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-danger:hover{background:#d63353}
+    .btn-sm{padding:6px 12px;font-size:.8rem}
+    /* Search */
+    .search-bar{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+    .search-input{flex:1;min-width:200px;padding:10px 16px 10px 40px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:.9rem;outline:none;transition:border var(--transition)}
+    .search-input:focus{border-color:var(--primary)}
+    .search-wrap{position:relative;flex:1;min-width:200px}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.95rem}
+    /* Groups grid */
+    .groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+    .group-card{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid var(--border);transition:transform var(--transition),box-shadow var(--transition)}
+    .group-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+    .group-card-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+    .group-emoji{width:52px;height:52px;border-radius:14px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+    .group-card-title{font-size:1rem;font-weight:700;margin-bottom:2px}
+    .group-card-desc{font-size:.8rem;color:var(--text-muted)}
+    .group-meta{display:flex;align-items:center;gap:16px;margin:14px 0;font-size:.82rem;color:var(--text-muted)}
+    .group-meta span{display:flex;align-items:center;gap:4px}
+    .group-total{font-size:1.3rem;font-weight:800;color:var(--primary);margin-bottom:14px}
+    .member-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+    .chip{background:var(--surface2);border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:500}
+    .group-card-actions{display:flex;gap:8px;border-top:1px solid var(--border);padding-top:14px}
+    /* Modal */
+    .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+    .modal-backdrop.open{display:flex}
+    .modal{background:var(--surface);border-radius:var(--radius);padding:30px;width:100%;max-width:480px;box-shadow:var(--shadow-md);animation:modalIn .25s ease}
+    @keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+    .modal-title{font-size:1.1rem;font-weight:700}
+    .modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);border-radius:8px;padding:4px 8px;transition:background var(--transition)}
+    .modal-close:hover{background:var(--surface2)}
+    .form-group{margin-bottom:16px}
+    .form-label{font-size:.85rem;font-weight:600;margin-bottom:6px;display:block;color:var(--text)}
+    .form-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:.9rem;outline:none;transition:border var(--transition);font-family:inherit}
+    .form-input:focus{border-color:var(--primary)}
+    .form-input.error{border-color:var(--danger)}
+    .form-error{font-size:.78rem;color:var(--danger);margin-top:4px;display:none}
+    .emoji-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .emoji-btn{background:var(--surface2);border:2px solid transparent;border-radius:10px;width:40px;height:40px;font-size:1.3rem;cursor:pointer;transition:all var(--transition)}
+    .emoji-btn:hover,.emoji-btn.selected{border-color:var(--primary);background:var(--primary-light)}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;border-top:1px solid var(--border);padding-top:18px}
+    /* Empty */
+    .empty-state{text-align:center;padding:60px 20px}
+    .empty-state .empty-icon{font-size:3.5rem;margin-bottom:14px}
+    .empty-state h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+    .empty-state p{font-size:.88rem;color:var(--text-muted);margin-bottom:20px}
+    /* Error */
+    .error-state{background:#fde8ec;color:var(--danger);border-radius:var(--radius);padding:16px 20px;font-size:.9rem;display:flex;align-items:center;gap:10px;margin-bottom:20px}
+    /* confirm dialog */
+    .confirm-dialog{background:var(--surface);border-radius:var(--radius);padding:28px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow-md)}
+    .confirm-dialog h3{font-size:1rem;font-weight:700;margin-bottom:10px}
+    .confirm-dialog p{font-size:.88rem;color:var(--text-muted);margin-bottom:20px}
+    .confirm-dialog .actions{display:flex;gap:10px;justify-content:center}
+    /* Sidebar overlay */
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90}
+    /* Footer */
+    .footer{padding:18px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--text-muted)}
+    /* Toast */
+    #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:9000}
+    .toast{background:var(--surface);border-left:4px solid var(--primary);border-radius:10px;box-shadow:var(--shadow-md);padding:14px 18px;font-size:.88rem;animation:slideIn .3s ease;max-width:320px}
+    .toast.success{border-left-color:var(--success)}
+    .toast.error{border-left-color:var(--danger)}
+    @keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+    @media(max-width:768px){
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.open{transform:translateX(0)}
+      .sidebar-overlay.open{display:block}
+      .main-wrap{margin-left:0}
+      .menu-btn{display:flex}
+      .main-content{padding:18px}
+      .topbar{padding:0 18px}
+    }
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="../logo.svg" alt="SharePay" onerror="this.style.display='none'">
+    <span>SharePay</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">เมนูหลัก</div>
+    <a class="nav-item" href="../index.html"><span class="icon">🏠</span> Dashboard</a>
+    <a class="nav-item active" href="groups.html"><span class="icon">👥</span> กลุ่ม</a>
+    <a class="nav-item" href="expenses.html"><span class="icon">💸</span> รายจ่าย</a>
+    <a class="nav-item" href="settlement.html"><span class="icon">⚖️</span> จัดการหนี้</a>
+    <div class="nav-label" style="margin-top:12px;">ระบบ</div>
+    <a class="nav-item" href="settings.html"><span class="icon">⚙️</span> ตั้งค่า</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="avatar">U</div>
+    <div class="user-info">
+      <div class="user-name">ผู้ใช้งาน</div>
+      <div class="user-role">Member</div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-wrap">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <div class="page-title">👥 จัดการกลุ่ม</div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="themeBtn" title="สลับธีม">🌙</button>
+      <a href="settings.html" class="icon-btn" title="ตั้งค่า">⚙️</a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="section-header">
+      <div>
+        <div class="section-title">กลุ่มทั้งหมด</div>
+        <div class="section-sub" id="groupCount">กำลังโหลด...</div>
+      </div>
+      <button class="btn btn-primary" id="addGroupBtn">➕ สร้างกลุ่มใหม่</button>
+    </div>
+
+    <div id="errorBanner" class="error-state" style="display:none;">⚠️ <span id="errorMsg"></span></div>
+
+    <div class="search-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="ค้นหากลุ่ม...">
+      </div>
+      <select class="form-input" id="sortSelect" style="width:160px;flex:none;">
+        <option value="newest">ล่าสุด</option>
+        <option value="name">ชื่อ A–Z</option>
+        <option value="members">สมาชิก</option>
+        <option value="amount">ยอดเงิน</option>
+      </select>
+    </div>
+
+    <div class="groups-grid" id="groupsGrid">
+      <!-- populated by JS -->
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>© 2025 SharePay</span>
+    <span>v1.0.0</span>
+  </footer>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop" id="groupModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">สร้างกลุ่มใหม่</div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ชื่อกลุ่ม <span style="color:var(--danger)">*</span></label>
+      <input type="text" class="form-input" id="fGroupName" placeholder="เช่น ทริปเชียงใหม่">
+      <div class="form-error" id="fGroupNameErr">กรุณากรอกชื่อกลุ่ม</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">คำอธิบาย</label>
+      <input type="text" class="form-input" id="fGroupDesc" placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)">
+    </div>
+    <div class="form-group">
+      <label class="form-label">สมาชิก (คั่นด้วย ,)</label>
+      <input type="text" class="form-input" id="fGroupMembers" placeholder="เช่น สมชาย, สมหญิง, สมปอง">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ไอคอนกลุ่ม</label>
+      <div class="emoji-grid" id="emojiGrid"></div>
+      <input type="hidden" id="fGroupEmoji" value="🏠">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modalCancelBtn">ยกเลิก</button>
+      <button class="btn btn-primary" id="modalSaveBtn">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="confirm-dialog">
+    <h3>⚠️ ยืนยันการลบ</h3>
+    <p>คุณต้องการลบกลุ่ม "<span id="confirmGroupName"></span>" ใช่หรือไม่?<br>รายจ่ายในกลุ่มนี้จะถูกลบด้วย</p>
+    <div class="actions">
+      <button class="btn btn-outline" id="confirmCancel">ยกเลิก</button>
+      <button class="btn btn-danger" id="confirmDelete">🗑️ ลบ</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="../api.js"></script>
+<script src="../groups.js"></script>
+<script>
+  /* Theme & Sidebar */
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    sidebar.classList.toggle('open'); overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open'); overlay.classList.remove('open');
+  });
+  const themeBtn = document.getElementById('themeBtn');
+  function applyTheme(d) {
+    document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+    themeBtn.textContent = d ? '☀️' : '🌙';
+    localStorage.setItem('sp_theme', d ? 'dark' : 'light');
+  }
+  themeBtn.addEventListener('click', () => applyTheme(document.documentElement.getAttribute('data-theme') !== 'dark'));
+  applyTheme(localStorage.getItem('sp_theme') === 'dark');
+
+  /* Toast */
+  function showToast(msg, type = '') {
+    const t = document.createElement('div');
+    t.className = `toast ${type}`; t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+  function fmt(n) { return Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2}); }
+
+  /* State */
+  let groups = [], expenses = [], editId = null, deleteId = null;
+  const EMOJIS = ['🏠','🎉','✈️','🍽️','🎮','🛒','💼','🎓','🏖️','🎸','🚗','⚽','🎯','🏋️','🎁','🌏'];
+
+  function loadAll() {
+    groups = JSON.parse(localStorage.getItem('sp_groups') || '[]');
+    expenses = JSON.parse(localStorage.getItem('sp_expenses') || '[]');
+  }
+  function saveGroups() { localStorage.setItem('sp_groups', JSON.stringify(groups)); }
+
+  function renderGroups() {
+    loadAll();
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const sort = document.getElementById('sortSelect').value;
+    let list = groups.filter(g => g.name.toLowerCase().includes(q));
+    if (sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sort === 'members') list.sort((a, b) => (b.members||[]).length - (a.members||[]).length);
+    else if (sort === 'amount') list.sort((a, b) => groupTotal(b.id) - groupTotal(a.id));
+    else list.sort((a, b) => (b.createdAt||0) - (a.createdAt||0));
+
+    document.getElementById('groupCount').textContent = `${list.length} กลุ่ม`;
+    const grid = document.getElementById('groupsGrid');
+    if (list.length === 0) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">👥</div>
+        <h3>${q ? 'ไม่พบกลุ่มที่ค้นหา' : 'ยังไม่มีกลุ่ม'}</h3>
+        <p>${q ? 'ลองค้นหาด้วยคำอื่น' : 'สร้างกลุ่มแรกของคุณเพื่อเริ่มต้น'}</p>
+        ${!q ? '<button class="btn btn-primary" onclick="openAddModal()">➕ สร้างกลุ่ม</button>' : ''}
+      </div>`; return;
+    }
+    grid.innerHTML = list.map(g => {
+      const members = g.members || [];
+      const total = groupTotal(g.id);
+      return `<div class="group-card">
+        <div class="group-card-header">
+          <div class="group-emoji">${g.emoji||'🏠'}</div>
+          <div>
+            <div class="group-card-title">${esc(g.name)}</div>
+            <div class="group-card-desc">${esc(g.desc||'ไม่มีคำอธิบาย')}</div>
+          </div>
+        </div>
+        <div class="group-meta">
+          <span>👤 ${members.length} สมาชิก</span>
+          <span>📋 ${expenses.filter(e=>e.groupId===g.id).length} รายการ</span>
+        </div>
+        <div class="group-total">฿${fmt(total)}</div>
+        <div class="member-chips">${members.slice(0,5).map(m=>`<span class="chip">${esc(m)}</span>`).join('')}${members.length>5?`<span class="chip">+${members.length-5}</span>`:''}</div>
+        <div class="group-card-actions">
+          <button class="btn btn-outline btn-sm" onclick="openEditModal('${g.id}')">✏️ แก้ไข</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteGroup('${g.id}')">🗑️ ลบ</button>
+          <a href="expenses.html?group=${g.id}" class="btn btn-primary btn-sm" style="margin-left:auto;">💸 รายจ่าย</a>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function groupTotal(id) {
+    return expenses.filter(e => e.groupId === id).reduce((s, e) => s + (parseFloat(e.amount)||0), 0);
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* Emoji Grid */
+  function renderEmojiGrid(sel = '🏠') {
+    document.getElementById('emojiGrid').innerHTML = EMOJIS.map(e =>
+      `<button type="button" class="emoji-btn${e===sel?' selected':''}" data-emoji="${e}" onclick="selectEmoji('${e}')">${e}</button>`
+    ).join('');
+  }
+  function selectEmoji(e) {
+    document.getElementById('fGroupEmoji').value = e;
+    document.querySelectorAll('.emoji-btn').forEach(b => b.classList.toggle('selected', b.dataset.emoji === e));
+  }
+
+  /* Modal */
+  function openAddModal() {
+    editId = null;
+    document.getElementById('modalTitle').textContent = '➕ สร้างกลุ่มใหม่';
+    document.getElementById('fGroupName').value = '';
+    document.getElementById('fGroupDesc').value = '';
+    document.getElementById('fGroupMembers').value = '';
+    document.getElementById('fGroupEmoji').value = '🏠';
+    renderEmojiGrid('🏠');
+    clearErrors();
+    document.getElementById('groupModal').classList.add('open');
+    document.getElementById('fGroupName').focus();
+  }
+  function openEditModal(id) {
+    loadAll();
+    const g = groups.find(x => x.id === id); if (!g) return;
+    editId = id;
+    document.getElementById('modalTitle').textContent = '✏️ แก้ไขกลุ่ม';
+    document.getElementById('fGroupName').value = g.name;
+    document.getElementById('fGroupDesc').value = g.desc || '';
+    document.getElementById('fGroupMembers').value = (g.members||[]).join(', ');
+    document.getElementById('fGroupEmoji').value = g.emoji || '🏠';
+    renderEmojiGrid(g.emoji || '🏠');
+    clearErrors();
+    document.getElementById('groupModal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('groupModal').classList.remove('open'); }
+  function clearErrors() {
+    document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('.form-input').forEach(e => e.classList.remove('error'));
+  }
+
+  document.getElementById('addGroupBtn').addEventListener('click', openAddModal);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+  document.getElementById('groupModal').addEventListener('click', e => { if (e.target === document.getElementById('groupModal')) closeModal(); });
+
+  document.getElementById('modalSaveBtn').addEventListener('click', () => {
+    clearErrors();
+    const name = document.getElementById('fGroupName').value.trim();
+    if (!name) {
+      document.getElementById('fGroupName').classList.add('error');
+      document.getElementById('fGroupNameErr').style.display = 'block';
+      return;
+    }
+    const membersRaw = document.getElementById('fGroupMembers').value;
+    const members = membersRaw ? membersRaw.split(',').map(m => m.trim()).filter(Boolean) : [];
+    const group = {
+      name,
+      desc: document.getElementById('fGroupDesc').value.trim(),
+      members,
+      emoji: document.getElementById('fGroupEmoji').value,
+      updatedAt: Date.now()
+    };
+    loadAll();
+    if (editId) {
+      const idx = groups.findIndex(x => x.id === editId);
+      if (idx !== -1) groups[idx] = { ...groups[idx], ...group };
+      showToast('✅ แก้ไขกลุ่มสำเร็จ', 'success');
+    } else {
+      group.id = 'g_' + Date.now();
+      group.createdAt = Date.now();
+      groups.push(group);
+      showToast('✅ สร้างกลุ่มสำเร็จ', 'success');
+    }
+    saveGroups();
+    closeModal();
+    renderGroups();
+    if (typeof onGroupsUpdated === 'function') onGroupsUpdated(groups);
+  });
+
+  /* Delete */
+  function confirmDeleteGroup(id) {
+    loadAll();
+    const g = groups.find(x => x.id === id); if (!g) return;
+    deleteId = id;
+    document.getElementById('confirmGroupName').textContent = g.name;
+    document.getElementById('confirmModal').classList.add('open');
+  }
+  document.getElementById('confirmCancel').addEventListener('click', () => {
+    document.getElementById('confirmModal').classList.remove('open');
+  });
+  document.getElementById('confirmDelete').addEventListener('click', () => {
+    loadAll();
+    groups = groups.filter(g => g.id !== deleteId);
+    expenses = expenses.filter(e => e.groupId !== deleteId);
+    saveGroups();
+    localStorage.setItem('sp_expenses', JSON.stringify(expenses));
+    document.getElementById('confirmModal').classList.remove('open');
+    showToast('🗑️ ลบกลุ่มเรียบร้อย', '');
+    renderGroups();
+  });
+
+  /* Search & Sort */
+  document.getElementById('searchInput').addEventListener('input', renderGroups);
+  document.getElementById('sortSelect').addEventListener('change', renderGroups);
+
+  /* Init */
+  renderGroups();
+  if (typeof initGroups === 'function') initGroups();
+</script>
+</body>
+</html>
